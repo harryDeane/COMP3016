@@ -1,30 +1,49 @@
-#ifndef GAME_ENGINE_H
-#define GAME_ENGINE_H
+#ifndef GAMEENGINE_H
+#define GAMEENGINE_H
 
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <string>
-#include "Player.h" // Ensure to include your Player class
+
+class Player;
+class Environment;
 
 class GameEngine {
 public:
-    GameEngine();  // Constructor
-    bool init(const char* title, int width, int height); // Initialize SDL
-    void clean(); // Clean up resources
-    void handleEvents(); // Handle user input
-    void render(); // Render game
-    void update(); // Update game logic
-    void processAction(const std::string& action); // Process player actions
-    void randomEvent(); // Handle random events
-    void displayStats(); // Display player stats
+    GameEngine();
+    ~GameEngine();
+
+    bool init(const char* title, int width, int height);
+    void handleEvents();
+    void handlePlayerAction(const std::string& action);
+    void handleEnvironmentEffects(std::string& eventMessage);
+    void update();
+    void render();
+    void clean();
+    bool running() const { return isRunning; }
 
 private:
-    SDL_Window* window; // SDL Window
-    SDL_Renderer* renderer; // SDL Renderer
-    Player* player; // Player instance
-    std::string dynamicMessage; // Message to display in-game
+    // SDL elements
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    TTF_Font* font;
 
-    void renderText(const std::string& message, int x, int y); // Render text function
+    // Game elements
+    Player* player;
+    Environment* environment;
+    std::string dynamicMessage;
+    bool isRunning;
+    bool environmentEffectApplied;
+
+    // Textures
+    SDL_Texture* backgroundTexture;
+    SDL_Texture* drinkIcon;
+    SDL_Texture* eatIcon;
+
+    // Helper functions
+    void renderText(const std::string& text, int x, int y);
+    SDL_Texture* loadTexture(const std::string& filePath);
+    void renderImage(SDL_Texture* texture, int x, int y, int width, int height);
 };
 
-#endif // GAME_ENGINE_H
+#endif // GAMEENGINE_H

@@ -1,176 +1,221 @@
 #include "GameEngine.h"
+#include "Player.h"
+#include "Environment.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_image.h>
 #include <iostream>
-#include <limits>
+#include <sstream>
 
-// Constructor
-GameEngine::GameEngine() : player(new Player()), window(nullptr), renderer(nullptr) {}
+GameEngine::GameEngine()
+    : window(nullptr), renderer(nullptr), font(nullptr), isRunning(true), environmentEffectApplied(false),
+    backgroundTexture(nullptr), drinkIcon(nullptr), eatIcon(nullptr) {
+    player = new Player();
+    environment = new Environment();
+    dynamicMessage = "Welcome to the Survival Game!";
+}
 
-// Initialize SDL, create window and renderer
+GameEngine::~GameEngine() {
+    delete player;
+    delete environment;
+}
+
 bool GameEngine::init(const char* title, int width, int height) {
-    // Initialize SDL
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        std::cout << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        std::cout << "SDL Init Error: " << SDL_GetError() << std::endl;
         return false;
     }
 
-    // Create window
+    if (TTF_Init() == -1) {
+        std::cout << "TTF Init Error: " << TTF_GetError() << std::endl;
+        return false;
+    }
+
+    if (IMG_Init(IMG_INIT_PNG) == 0) {
+        std::cout << "IMG Init Error: " << IMG_GetError() << std::endl;
+        return false;
+    }
+
     window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
     if (!window) {
-        std::cout << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+        std::cout << "Window Creation Error: " << SDL_GetError() << std::endl;
         return false;
     }
 
-    // Create renderer
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
-        std::cout << "Renderer could not be created! SDL_Error: " << SDL_GetError() << std::endl;
+        std::cout << "Renderer Creation Error: " << SDL_GetError() << std::endl;
         return false;
     }
 
-    // Initialize TTF
-    if (TTF_Init() == -1) {
-        std::cout << "TTF could not initialize! TTF_Error: " << TTF_GetError() << std::endl;
+    font = TTF_OpenFont("assets/fonts/font.ttf", 24);
+    if (!font) {
+        std::cout << "Font Loading Error: " << TTF_GetError() << std::endl;
         return false;
     }
 
-    return true;
+    // Load background and icons
+    backgroundTexture = loadTexture("assets/images/background.png");
+    drinkIcon = loadTexture("assets/images/drink_icon.png");
+    eatIcon = loadTexture("assets/images/eat_icon.png");
+
+    return backgroundTexture && drinkIcon && eatIcon;
 }
 
-// Clean up SDL resources
-void GameEngine::clean() {
-    SDL_DestroyRenderer(renderer);  // Destroy the renderer
-    SDL_DestroyWindow(window);      // Destroy the window
-    TTF_Quit();                     // Quit TTF subsystems
-    SDL_Quit();                     // Quit SDL subsystems
+SDL_Texture* GameEngine::loadTexture(const std::string& filePath) {
+    SDL_Texture* texture = IMG_LoadTexture(renderer, filePath.c_str());
+    if (!texture) {
+        std::cout << "Failed to load texture: " << filePath << " Error: " << IMG_GetError() << std::endl;
+    }
+    return texture;
 }
 
-// Handle events such as user input
+void GameEngine::renderImage(SDL_Texture* texture, int x, int y, int width, int height) {
+    SDL_Rect destRect = { x, y, width, height };
+    SDL_RenderCopy(renderer, texture, nullptr, &destRect);
+}
+
+void GameEngine::renderText(const std::string& text, int x, int y) {
+    if (text.empty()) {
+        std::cout << "Warning: Text to render is empty!" << std::endl;
+        return;
+    }
+
+    SDL_Color color = { 255, 255, 255, 255 };
+    SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+    if (!surface) {
+        std::cout << "TTF_RenderText_Solid Error: " << TTF_GetError() << std::endl;
+        return;
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Rect destRect = { x, y, surface->w, surface->h };
+
+    SDL_FreeSurface(surface);
+    SDL_RenderCopy(renderer, texture, nullptr, &destRect);
+    SDL_DestroyTexture(texture);
+}
+
 void GameEngine::handleEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
-            // Handle quit event
-            clean();
-            exit(0);
+            isRunning = false;
+        }
+        else if (event.type == SDL_KEYDOWN) {
+            switch (event.key.keysym.sym) {
+            case SDLK_1:
+                handlePlayerAction("forage");
+                break;
+            case SDLK_2:
+                handlePlayerAction("hunt");
+                break;
+            case SDLK_3:
+                handlePlayerAction("rest");
+                break;
+            case SDLK_4:
+                handlePlayerAction("build_shelter");
+                break;
+            case SDLK_5:
+                handlePlayerAction("consume_food");
+                break;
+            case SDLK_6:
+                handlePlayerAction("consume_water");
+                break;
+            case SDLK_q:
+                isRunning = false;
+                break;
+            }
         }
     }
 }
 
-// Render text to the screen
-void GameEngine::renderText(const std::string& message, int x, int y) {
-    TTF_Font* font = TTF_OpenFont("assets/fonts/font.ttf", 24);  // Load a font
-    if (!font) {
-        std::cout << "Failed to load font! TTF_Error: " << TTF_GetError() << std::endl;
-        return;
-    }
+void GameEngine::handlePlayerAction(const std::string& action) {
+    dynamicMessage = "You chose to " + action + ". ";
 
-    SDL_Color color = { 255, 255, 255 }; // White color
-    SDL_Surface* surface = TTF_RenderText_Solid(font, message.c_str(), color);
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-    int textWidth = surface->w;
-    int textHeight = surface->h;
-
-    SDL_Rect dstrect = { x, y, textWidth, textHeight };
-    SDL_RenderCopy(renderer, texture, NULL, &dstrect);
-
-    SDL_FreeSurface(surface);
-    SDL_DestroyTexture(texture);
-    TTF_CloseFont(font);
-}
-
-// Render the game
-void GameEngine::render() {
-    // Clear screen
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black color
-    SDL_RenderClear(renderer);
-
-    // Display player stats
-    displayStats();
-
-    // Render any additional dynamic messages or events here
-    renderText(dynamicMessage, 10, 50); // Example position
-
-    // Present the back buffer
-    SDL_RenderPresent(renderer);
-}
-
-// Display player stats at the top of the screen
-void GameEngine::displayStats() {
-    std::string stats = "Health: " + std::to_string(player->getHealth()) +
-        ", Hunger: " + std::to_string(player->getHunger()) +
-        ", Thirst: " + std::to_string(player->getThirst()) +
-        ", Energy: " + std::to_string(player->getEnergy());
-    renderText(stats, 10, 10); // Render stats at position (10, 10)
-}
-
-// Process player actions and random events
-void GameEngine::processAction(const std::string& action) {
     if (action == "forage") {
         player->forage();
-        randomEvent(); // Check for random events
-    }
-    else if (action == "sleep") {
-        if (player->hasShelter()) {
-            player->rest();
-        }
-        else {
-            dynamicMessage = "You need to build a shelter to sleep!";
-        }
-    }
-    else if (action == "build shelter") {
-        player->buildShelter();
+        dynamicMessage += "You found resources.";
     }
     else if (action == "hunt") {
         player->hunt();
-        randomEvent(); // Check for random events
+        dynamicMessage += "You went hunting.";
     }
-    else if (action == "consume food" || action == "consume water") {
-        player->useResource(action == "consume food" ? "food" : "water");
+    else if (action == "rest") {
+        player->rest();
+        dynamicMessage += "You feel more rested.";
     }
-    else {
-        dynamicMessage = "Invalid action! Please choose a valid option.";
+    else if (action == "build_shelter") {
+        player->buildShelter();
+        dynamicMessage += "Shelter built.";
     }
+    else if (action == "consume_food") {
+        player->useResource("food");
+        dynamicMessage += "You consumed food.";
+    }
+    else if (action == "consume_water") {
+        player->useResource("water");
+        dynamicMessage += "You drank water.";
+    }
+
+    handleEnvironmentEffects(dynamicMessage);
 }
 
-// Generate random events during gameplay
-void GameEngine::randomEvent() {
-    int eventChance = rand() % 100;
-    if (eventChance < 20) { // 20% chance for an event
-        dynamicMessage = "A wild animal appears!";
-        // Implement logic for the player to encounter the animal
-        // Example: decrease health or energy based on encounter
-        player->adjustHealth(-10); // Adjust health as an example
+void GameEngine::handleEnvironmentEffects(std::string& eventMessage) {
+    if (environment->isNight() && !environmentEffectApplied) {
+        player->adjustEnergy(-10);
+        eventMessage += " It's night, and you're losing energy faster!";
     }
-    else {
-        dynamicMessage = "Nothing special happened.";
+
+    if (environment->isBadWeather() && !player->hasShelter()) {
+        player->adjustHealth(-10);
+        eventMessage += " The weather is harsh, and you're losing health without shelter!";
     }
+
+    environmentEffectApplied = true;
 }
 
-// Main game loop
+void GameEngine::render() {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    // Render background image
+    if (backgroundTexture) {
+        renderImage(backgroundTexture, 0, 0, 800, 600); // Adjust size to match window
+    }
+
+    // Render player stats
+    std::ostringstream stats;
+    stats << "Health: " << player->getHealth() << " Hunger: " << player->getHunger()
+        << " Thirst: " << player->getThirst() << " Energy: " << player->getEnergy();
+    renderText(stats.str(), 10, 10);
+
+    // Render dynamic message
+    renderText(dynamicMessage, 10, 50);
+
+    // Render action prompt with icons
+    std::string actionPrompt = "Press 1: Forage | 2: Hunt | 3: Rest | 4: Build Shelter | 5: Eat | 6: Drink | Q: Quit";
+    renderText(actionPrompt, 10, 450);
+
+    // Render eating and drinking icons
+    renderImage(eatIcon, 320, 440, 24, 24);   // Position next to "Eat" text
+    renderImage(drinkIcon, 430, 440, 24, 24); // Position next to "Drink" text
+
+    SDL_RenderPresent(renderer);
+}
+
 void GameEngine::update() {
-    std::string action;
-    std::cout << "Enter your action (forage, sleep, build shelter, hunt, consume food, consume water): ";
-    std::getline(std::cin, action);
-    processAction(action);
+    environmentEffectApplied = false;
 }
 
-// Main function to run the game
-int main(int argc, char* argv[]) {
-    GameEngine game;
-    if (!game.init("Survival Game", 800, 600)) {
-        return -1; // Initialization failed
-    }
-
-    // Main game loop
-    while (true) {
-        game.handleEvents();
-        game.update();
-        game.render();
-    }
-
-    game.clean();
-    return 0;
+void GameEngine::clean() {
+    SDL_DestroyTexture(backgroundTexture);
+    SDL_DestroyTexture(drinkIcon);
+    SDL_DestroyTexture(eatIcon);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    TTF_CloseFont(font);
+    IMG_Quit();
+    TTF_Quit();
+    SDL_Quit();
 }
