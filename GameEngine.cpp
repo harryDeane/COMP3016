@@ -54,7 +54,6 @@ bool GameEngine::init(const char* title, int width, int height) {
         return false;
     }
 
-    // Load background and icons
     backgroundTexture = loadTexture("assets/images/background.png");
     drinkIcon = loadTexture("assets/images/drink_icon.png");
     eatIcon = loadTexture("assets/images/eat_icon.png");
@@ -77,18 +76,12 @@ void GameEngine::renderImage(SDL_Texture* texture, int x, int y, int width, int 
 }
 
 void GameEngine::renderText(const std::string& text, int x, int y) {
-    if (text.empty()) {
-        std::cout << "Warning: Text to render is empty!" << std::endl;
-        return;
-    }
-
     SDL_Color color = { 255, 255, 255, 255 };
     SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
     if (!surface) {
-        std::cout << "TTF_RenderText_Solid Error: " << TTF_GetError() << std::endl;
+        std::cout << "Text Rendering Error: " << TTF_GetError() << std::endl;
         return;
     }
-
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_Rect destRect = { x, y, surface->w, surface->h };
 
@@ -123,6 +116,9 @@ void GameEngine::handleEvents() {
             case SDLK_6:
                 handlePlayerAction("consume_water");
                 break;
+            case SDLK_7:
+                showInventory();
+                break;
             case SDLK_q:
                 isRunning = false;
                 break;
@@ -131,46 +127,44 @@ void GameEngine::handleEvents() {
     }
 }
 
-void GameEngine::handlePlayerAction(const std::string& action) {
-    dynamicMessage = "You chose to " + action + ". ";
+void GameEngine::showInventory() {
+    dynamicMessage = player->displayInventory(); // Call the inventory display method and update the dynamic message
+}
 
+void GameEngine::handlePlayerAction(const std::string& action) {
     if (action == "forage") {
-        player->forage();
-        dynamicMessage += "You found resources.";
+        dynamicMessage = player->forage();
+        player->incrementScore();
     }
     else if (action == "hunt") {
-        player->hunt();
-        dynamicMessage += "You went hunting.";
+        dynamicMessage = player->hunt();
+        player->incrementScore();
     }
     else if (action == "rest") {
-        player->rest();
-        dynamicMessage += "You feel more rested.";
+        dynamicMessage = player->rest();
+        player->incrementScore();
     }
     else if (action == "build_shelter") {
-        player->buildShelter();
-        dynamicMessage += "Shelter built.";
-        shelterBuilt = true; // Set the flag to true
+        dynamicMessage = player->buildShelter();
+        shelterBuilt = player->hasShelter();
     }
     else if (action == "consume_food") {
-        player->useResource("food");
-        dynamicMessage += "You consumed food.";
+        dynamicMessage = player->useResource("food");
     }
     else if (action == "consume_water") {
-        player->useResource("water");
-        dynamicMessage += "You drank water.";
+        dynamicMessage = player->useResource("water");
     }
-
     handleEnvironmentEffects(dynamicMessage);
 }
 
 void GameEngine::handleEnvironmentEffects(std::string& eventMessage) {
     if (environment->isNight() && !environmentEffectApplied) {
-        player->adjustEnergy(-10);
+        player->adjustEnergy(-10); // Ensure these functions exist
         eventMessage += " It's night, and you're losing energy faster!";
     }
 
     if (environment->isBadWeather() && !player->hasShelter()) {
-        player->adjustHealth(-10);
+        player->adjustHealth(-10); // Ensure these functions exist
         eventMessage += " The weather is harsh, and you're losing health without shelter!";
     }
 
@@ -186,6 +180,10 @@ void GameEngine::render() {
         renderImage(backgroundTexture, 0, 0, 800, 600);
     }
 
+    // Display score
+    std::string scoreText = "Score: " + std::to_string(player->getScore()); // Use -> for pointer
+    renderText(scoreText, 10, 100); // Render score on the screen
+
     // Render player stats
     std::ostringstream stats;
     stats << "Health: " << player->getHealth() << " Hunger: " << player->getHunger()
@@ -196,8 +194,8 @@ void GameEngine::render() {
     renderText(dynamicMessage, 10, 50);
 
     // Render action prompts
-    std::string actionPrompt1 = "Press 1: Forage | 2: Hunt | 3: Rest |";
-    std::string actionPrompt2 = "4: Build Shelter | 5: Eat | 6: Drink | Q: Quit";
+    std::string actionPrompt1 = "|Press 1: Forage | 2: Hunt | 3: Rest | 4: Build Shelter |";
+    std::string actionPrompt2 = "| 5: Eat | 6: Drink | 7: Show Inventory | Q: Quit |";
     renderText(actionPrompt1, 10, 450);
     renderText(actionPrompt2, 10, 500);
 
@@ -219,6 +217,7 @@ void GameEngine::render() {
 
 void GameEngine::update() {
     environmentEffectApplied = false;
+    
 }
 
 void GameEngine::clean() {

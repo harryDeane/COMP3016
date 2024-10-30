@@ -20,6 +20,7 @@ public:
     void update();
     void render();
     void clean();
+    void showInventory();
     bool isGameRunning() const { return isRunning; }
 
 private:
