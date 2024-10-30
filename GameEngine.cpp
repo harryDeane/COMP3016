@@ -9,7 +9,7 @@
 
 GameEngine::GameEngine()
     : window(nullptr), renderer(nullptr), font(nullptr), isRunning(true), environmentEffectApplied(false),
-    backgroundTexture(nullptr), drinkIcon(nullptr), eatIcon(nullptr) {
+    backgroundTexture(nullptr), drinkIcon(nullptr), eatIcon(nullptr), tent(nullptr), shelterBuilt(false) {
     player = new Player();
     environment = new Environment();
     dynamicMessage = "Welcome to the Survival Game!";
@@ -58,8 +58,9 @@ bool GameEngine::init(const char* title, int width, int height) {
     backgroundTexture = loadTexture("assets/images/background.png");
     drinkIcon = loadTexture("assets/images/drink_icon.png");
     eatIcon = loadTexture("assets/images/eat_icon.png");
+    tent = loadTexture("assets/images/tent.png");
 
-    return backgroundTexture && drinkIcon && eatIcon;
+    return backgroundTexture && drinkIcon && eatIcon && tent;
 }
 
 SDL_Texture* GameEngine::loadTexture(const std::string& filePath) {
@@ -148,6 +149,7 @@ void GameEngine::handlePlayerAction(const std::string& action) {
     else if (action == "build_shelter") {
         player->buildShelter();
         dynamicMessage += "Shelter built.";
+        shelterBuilt = true; // Set the flag to true
     }
     else if (action == "consume_food") {
         player->useResource("food");
@@ -181,7 +183,7 @@ void GameEngine::render() {
 
     // Render background image
     if (backgroundTexture) {
-        renderImage(backgroundTexture, 0, 0, 800, 600); // Adjust size to match window
+        renderImage(backgroundTexture, 0, 0, 800, 600);
     }
 
     // Render player stats
@@ -193,13 +195,24 @@ void GameEngine::render() {
     // Render dynamic message
     renderText(dynamicMessage, 10, 50);
 
-    // Render action prompt with icons
-    std::string actionPrompt = "Press 1: Forage | 2: Hunt | 3: Rest | 4: Build Shelter | 5: Eat | 6: Drink | Q: Quit";
-    renderText(actionPrompt, 10, 450);
+    // Render action prompts
+    std::string actionPrompt1 = "Press 1: Forage | 2: Hunt | 3: Rest |";
+    std::string actionPrompt2 = "4: Build Shelter | 5: Eat | 6: Drink | Q: Quit";
+    renderText(actionPrompt1, 10, 450);
+    renderText(actionPrompt2, 10, 500);
 
-    // Render eating and drinking icons
-    renderImage(eatIcon, 320, 440, 24, 24);   // Position next to "Eat" text
-    renderImage(drinkIcon, 430, 440, 24, 24); // Position next to "Drink" text
+    // Display food and drink icons if user consumed them
+    if (dynamicMessage.find("consume_food") != std::string::npos) {
+        renderImage(eatIcon, 200, 100, 100, 100); // Adjust position and size as needed
+    }
+    if (dynamicMessage.find("consume_water") != std::string::npos) {
+        renderImage(drinkIcon, 200, 100, 100, 100); // Adjust position and size as needed
+    }
+
+    // Render the tent image if shelter is built
+    if (shelterBuilt) {
+        renderImage(tent, 500, -50, 500, 500); // Adjust position and size as needed
+    }
 
     SDL_RenderPresent(renderer);
 }
@@ -212,6 +225,7 @@ void GameEngine::clean() {
     SDL_DestroyTexture(backgroundTexture);
     SDL_DestroyTexture(drinkIcon);
     SDL_DestroyTexture(eatIcon);
+    SDL_DestroyTexture(tent);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     TTF_CloseFont(font);

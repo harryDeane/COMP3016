@@ -20,7 +20,7 @@ public:
     void update();
     void render();
     void clean();
-    bool running() const { return isRunning; }
+    bool isGameRunning() const { return isRunning; }
 
 private:
     // SDL elements
@@ -34,11 +34,13 @@ private:
     std::string dynamicMessage;
     bool isRunning;
     bool environmentEffectApplied;
+    bool shelterBuilt;
 
     // Textures
     SDL_Texture* backgroundTexture;
     SDL_Texture* drinkIcon;
     SDL_Texture* eatIcon;
+    SDL_Texture* tent;
 
     // Helper functions
     void renderText(const std::string& text, int x, int y);

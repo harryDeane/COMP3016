@@ -5,7 +5,7 @@
 int main(int argc, char* argv[]) {
     GameEngine game;
     if (game.init("Survival Adventure", 800, 600)) {
-        while (true) {
+        while (game.isGameRunning()) {
             game.handleEvents();
             game.update();
             game.render();
