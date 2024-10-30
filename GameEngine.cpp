@@ -9,7 +9,8 @@
 
 GameEngine::GameEngine()
     : window(nullptr), renderer(nullptr), font(nullptr), isRunning(true), environmentEffectApplied(false),
-    backgroundTexture(nullptr), drinkIcon(nullptr), eatIcon(nullptr), tent(nullptr), shelterBuilt(false) {
+    backgroundTexture(nullptr), drinkIcon(nullptr), eatIcon(nullptr), tent(nullptr), shelterBuilt(false){
+    
     player = new Player();
     environment = new Environment();
     dynamicMessage = "Welcome to the Survival Game!";
@@ -154,7 +155,10 @@ void GameEngine::handlePlayerAction(const std::string& action) {
     else if (action == "consume_water") {
         dynamicMessage = player->useResource("water");
     }
+
     handleEnvironmentEffects(dynamicMessage);
+
+    checkGameOver();
 }
 
 void GameEngine::handleEnvironmentEffects(std::string& eventMessage) {
@@ -212,6 +216,11 @@ void GameEngine::render() {
         renderImage(tent, 500, -50, 500, 500); // Adjust position and size as needed
     }
 
+    // Check if the game is over
+    if (gameOver) {
+        renderText(dynamicMessage, 10, 100); // Render the game-over message
+    }
+
     SDL_RenderPresent(renderer);
 }
 
@@ -232,3 +241,14 @@ void GameEngine::clean() {
     TTF_Quit();
     SDL_Quit();
 }
+
+bool GameEngine::isGameOver() const {
+    return player->getHealth() <= 0 || player->getHunger() <= 0 || player->getThirst() <= 0 || player->getEnergy() <= 0;
+}
+
+void GameEngine::checkGameOver() {
+    if (isGameOver()) {
+        dynamicMessage = "Game Over! Your final score is: " + std::to_string(player->getScore());
+    }
+}
+

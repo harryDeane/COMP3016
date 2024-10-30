@@ -22,6 +22,9 @@ public:
     void clean();
     void showInventory();
     bool isGameRunning() const { return isRunning; }
+    bool isGameOver() const; 
+    
+    void checkGameOver();
 
 private:
     // SDL elements
@@ -36,6 +39,7 @@ private:
     bool isRunning;
     bool environmentEffectApplied;
     bool shelterBuilt;
+    bool gameOver;
 
     // Textures
     SDL_Texture* backgroundTexture;

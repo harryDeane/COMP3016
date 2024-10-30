@@ -43,10 +43,18 @@ std::string Player::hunt() {
     hunger -= 15;
     thirst -= 10;
     energy -= 20;
-    addResource("food", rand() % 5 + 2);
 
+    // Simulating the chance of an animal attack (e.g., 30% chance)
+    int attackChance = rand() % 100; // Generate a random number between 0 and 99
+    if (attackChance < 30) { // 30% chance to be attacked
+        adjustHealth(-20); // Reduce health by 20 on attack
+        return "Went hunting and obtained food, but an animal attacked!";
+    }
+
+    addResource("food", rand() % 5 + 2);
     return "Went hunting and obtained food.";
 }
+
 
 std::string Player::rest() {
     if (shelterBuilt) {
