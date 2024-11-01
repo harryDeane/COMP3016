@@ -32,9 +32,11 @@ std::string Player::forage() {
     hunger -= 10;
     thirst -= 5;
     energy -= 15;
-    addResource("food", rand() % 3 + 1);
-    addResource("water", rand() % 3 + 1);
-    addResource("wood", rand() % 2 + 1);
+
+    // Randomly gather between 0 and 1 of each resource
+    addResource("food", rand() % 2);  // 0 or 1 food
+    addResource("water", rand() % 2); // 0 or 1 water
+    addResource("wood", rand() % 2);  // 0 or 1 wood
 
     return "Foraged for resources, reducing hunger, thirst, and energy.";
 }

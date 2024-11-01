@@ -205,15 +205,15 @@ void GameEngine::render() {
 
     // Display food and drink icons if user consumed them
     if (dynamicMessage.find("consume_food") != std::string::npos) {
-        renderImage(eatIcon, 200, 100, 100, 100); // Adjust position and size as needed
+        renderImage(eatIcon, 200, 100, 100, 100); 
     }
     if (dynamicMessage.find("consume_water") != std::string::npos) {
-        renderImage(drinkIcon, 200, 100, 100, 100); // Adjust position and size as needed
+        renderImage(drinkIcon, 200, 100, 100, 100);
     }
 
     // Render the tent image if shelter is built
     if (shelterBuilt) {
-        renderImage(tent, 500, -50, 500, 500); // Adjust position and size as needed
+        renderImage(tent, 500, -50, 500, 500);
     }
 
     // Check if the game is over
