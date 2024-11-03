@@ -26,6 +26,9 @@ public:
     
     void checkGameOver();
 
+    void saveScore();
+    void loadHighScore();
+
 private:
     // SDL elements
     SDL_Window* window;
@@ -40,6 +43,8 @@ private:
     bool environmentEffectApplied;
     bool shelterBuilt;
     bool gameOver;
+
+    int highScore;
 
     // Textures
     SDL_Texture* backgroundTexture;

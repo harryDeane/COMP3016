@@ -6,14 +6,16 @@
 #include <SDL_image.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 GameEngine::GameEngine()
     : window(nullptr), renderer(nullptr), font(nullptr), isRunning(true), environmentEffectApplied(false),
-    backgroundTexture(nullptr), drinkIcon(nullptr), eatIcon(nullptr), tent(nullptr), shelterBuilt(false){
+    backgroundTexture(nullptr), drinkIcon(nullptr), eatIcon(nullptr), tent(nullptr), shelterBuilt(false), highScore(0) {
     
     player = new Player();
     environment = new Environment();
     dynamicMessage = "Welcome to the Survival Game!";
+    loadHighScore();
 }
 
 GameEngine::~GameEngine() {
@@ -187,6 +189,8 @@ void GameEngine::render() {
     // Display score
     std::string scoreText = "Score: " + std::to_string(player->getScore()); 
     renderText(scoreText, 10, 100); // Render score on the screen
+    std::string highScoreText = "High Score: " + std::to_string(highScore);
+    renderText(highScoreText, 10, 140);
 
     // Render player stats
     std::ostringstream stats;
@@ -249,6 +253,28 @@ bool GameEngine::isGameOver() const {
 void GameEngine::checkGameOver() {
     if (isGameOver()) {
         dynamicMessage = "Game Over! Your final score is: " + std::to_string(player->getScore());
+        saveScore(); // Save the score at the end of the game
     }
 }
 
+void GameEngine::loadHighScore() {
+    std::ifstream inputFile("highscore.txt");
+    if (inputFile.is_open()) {
+        inputFile >> highScore;
+        inputFile.close();
+    }
+    else {
+        highScore = 0;  // Default if no file exists
+    }
+}
+
+void GameEngine::saveScore() {
+    if (player->getScore() > highScore) {
+        highScore = player->getScore();
+        std::ofstream outputFile("highscore.txt");
+        if (outputFile.is_open()) {
+            outputFile << highScore;
+            outputFile.close();
+        }
+    }
+}
