@@ -163,12 +163,12 @@ void GameEngine::handlePlayerAction(const std::string& action) {
 
 void GameEngine::handleEnvironmentEffects(std::string& eventMessage) {
     if (environment->isNight() && !environmentEffectApplied) {
-        player->adjustEnergy(-10); // Ensure these functions exist
+        player->adjustEnergy(-10); 
         eventMessage += " It's night, and you're losing energy faster!";
     }
 
     if (environment->isBadWeather() && !player->hasShelter()) {
-        player->adjustHealth(-10); // Ensure these functions exist
+        player->adjustHealth(-10); 
         eventMessage += " The weather is harsh, and you're losing health without shelter!";
     }
 
@@ -185,7 +185,7 @@ void GameEngine::render() {
     }
 
     // Display score
-    std::string scoreText = "Score: " + std::to_string(player->getScore()); // Use -> for pointer
+    std::string scoreText = "Score: " + std::to_string(player->getScore()); 
     renderText(scoreText, 10, 100); // Render score on the screen
 
     // Render player stats

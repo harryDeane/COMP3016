@@ -12,6 +12,6 @@ void Environment::updateTime() {
 }
 
 void Environment::updateWeather() {
-    // Randomly decide if the weather is bad (e.g., rain/snow)
+    // Randomly decide if the weather is bad
     badWeather = rand() % 2;
 }

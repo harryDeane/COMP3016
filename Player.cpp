@@ -46,7 +46,7 @@ std::string Player::hunt() {
     thirst -= 10;
     energy -= 20;
 
-    // Simulating the chance of an animal attack (e.g., 30% chance)
+    // Simulating the chance of an animal attack (30% chance)
     int attackChance = rand() % 100; // Generate a random number between 0 and 99
     if (attackChance < 30) { // 30% chance to be attacked
         adjustHealth(-20); // Reduce health by 20 on attack
@@ -103,7 +103,7 @@ bool Player::hasShelter() const {
     return shelterBuilt;
 }
 
-// Implementing the new methods
+
 void Player::adjustEnergy(int amount) {
     energy += amount;
     if (energy < 0) energy = 0; // Ensure energy doesn't drop below 0
