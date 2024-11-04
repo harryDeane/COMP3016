@@ -71,6 +71,8 @@ The game includes:
 
 **Foraging System**: Randomly rewards resources when players forage, introducing unpredictability.
 
+**Hunting System**: Players can choose to hunt which has a 30% chance of having a wild animal encounter, reducing their health.
+
 **High Score Tracking**: Saves the highest score to a file, which is then loaded at game start to display the player's best score.
 
 ## Coding Example
