@@ -68,7 +68,9 @@ Please ensure that you have these dependencies installed and correctly reference
 The game includes:
 
 **Resource Management**: Track wood, food, and water as the player makes decisions to survive.
+
 **Foraging System**: Randomly rewards resources when players forage, introducing unpredictability.
+
 **High Score Tracking**: Saves the highest score to a file, which is then loaded at game start to display the player's best score.
 
 ## Coding Example
