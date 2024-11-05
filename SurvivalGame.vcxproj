@@ -78,6 +78,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir)SDL2_mixer-devel-2.8.0-VC\SDL2_mixer-2.8.0\include;$(ProjectDir)SDL2_image-devel-2.8.2-VC\SDL2_image-2.8.2\include;$(ProjectDir)SDL2_ttf-2.22.0\include;$(ProjectDir)SDL2-2.30.8\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)SDL2_mixer-devel-2.8.0-VC\SDL2_mixer-2.8.0\lib\x64;$(ProjectDir)SDL2_image-devel-2.8.2-VC\SDL2_image-2.8.2\lib\x64;$(ProjectDir)SDL2_ttf-2.22.0\lib\x64;$(ProjectDir)SDL2-2.30.8\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -119,12 +121,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\harry\Desktop\SDL2_mixer-devel-2.8.0-VC\SDL2_mixer-2.8.0\include;C:\Users\harry\Desktop\SDL2_image-devel-2.8.2-VC\SDL2_image-2.8.2\include;C:\Users\harry\Desktop\SDL2_ttf-2.22.0\include;C:\Users\harry\Desktop\SDL2-2.30.8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)SDL2_ttf-2.22.0\include;$(ProjectDir)SDL2_image-devel-2.8.2-VC\SDL2_image-2.8.2\include;$(ProjectDir)SDL2_mixer-devel-2.8.0-VC\SDL2_mixer-2.8.0\include;$(ProjectDir)SDL2-2.30.8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\harry\Desktop\SDL2_mixer-devel-2.8.0-VC\SDL2_mixer-2.8.0\lib\x64;C:\Users\harry\Desktop\SDL2_image-devel-2.8.2-VC\SDL2_image-2.8.2\lib\x64;C:\Users\harry\Desktop\SDL2_ttf-2.22.0\lib\x64;C:\Users\harry\Desktop\SDL2-2.30.8\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)SDL2-2.30.8\lib\x64;$(ProjectDir)SDL2_ttf-2.22.0\lib\x64;$(ProjectDir)SDL2_image-devel-2.8.2-VC\SDL2_image-2.8.2\lib\x64;$(ProjectDir)SDL2_mixer-devel-2.8.0-VC\SDL2_mixer-2.8.0\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_ttf.lib;SDL2_image.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
